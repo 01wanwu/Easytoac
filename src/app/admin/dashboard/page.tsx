@@ -2,6 +2,35 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Separator } from '@/components/ui/separator'
+import {
+  Loader2,
+  LogOut,
+  Copy,
+  FileText,
+  BarChart3,
+  Key,
+  Settings,
+  Database,
+  Trash2,
+  Download,
+  AlertCircle,
+  Package,
+  TrendingUp,
+  Users,
+  Clock,
+} from 'lucide-react'
 
 // 定义激活码接口
 interface ActivationCode {
@@ -31,10 +60,8 @@ interface CardType {
   description: string
 }
 
-type TabType = 'generate' | 'list' | 'stats' | 'changePassword' | 'systemConfig'
-
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('stats')
+  const [activeTab, setActiveTab] = useState('stats')
   const [amount, setAmount] = useState(1)
   const [expiryDays, setExpiryDays] = useState(30)
   const [selectedCardType, setSelectedCardType] = useState<string>('')
@@ -69,10 +96,8 @@ export default function DashboardPage() {
   // 计算实际过期时间的辅助函数
   const getActualExpiresAt = (code: ActivationCode): Date | null => {
     if (code.usedAt && code.validDays) {
-      // 从激活时开始计算过期时间
       return new Date(new Date(code.usedAt).getTime() + code.validDays * 24 * 60 * 60 * 1000)
     }
-    // 兼容旧数据
     return code.expiresAt ? new Date(code.expiresAt) : null
   }
 
@@ -255,11 +280,9 @@ export default function DashboardPage() {
       if (data.success) {
         setMessage(data.message)
         setMessageType('success')
-        // 清空表单
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
-        // 延迟3秒后自动登出
         setTimeout(() => {
           handleLogout()
         }, 3000)
@@ -309,8 +332,8 @@ export default function DashboardPage() {
 
   // 更新配置项值
   const updateConfigValue = (key: string, value: any) => {
-    setSystemConfigs(prev => 
-      prev.map(config => 
+    setSystemConfigs(prev =>
+      prev.map(config =>
         config.key === key ? { ...config, value } : config
       )
     )
@@ -330,8 +353,8 @@ export default function DashboardPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          amount, 
+        body: JSON.stringify({
+          amount,
           expiryDays: finalExpiryDays,
           cardType: finalCardType
         }),
@@ -362,30 +385,30 @@ export default function DashboardPage() {
   }
 
   const exportCodes = (codes: ActivationCode[]) => {
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + "激活码,套餐类型,状态,创建时间,过期时间,使用时间,使用者\n"
       + codes.map(code => {
-          let status = '未激活'
-          let expiresDisplay = '激活后生效'
-          
-          const actualExpiresAt = getActualExpiresAt(code)
-          const isExpired = actualExpiresAt ? actualExpiresAt < new Date() : false
-          
-          if (isExpired) {
-            status = '已过期'
-            expiresDisplay = actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
-          } else if (code.isUsed) {
-            status = '已使用'
-            expiresDisplay = actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
-          } else if (!code.validDays) {
-            expiresDisplay = '无限期'
-          }
-          
-          const cardTypeDisplay = getCardTypeDisplay(code)
-          
-          return `${code.code},${cardTypeDisplay},${status},${new Date(code.createdAt).toLocaleString()},${expiresDisplay},${code.usedAt ? new Date(code.usedAt).toLocaleString() : ''},${code.usedBy || ''}`
-        }).join("\n")
-    
+        let status = '未激活'
+        let expiresDisplay = '激活后生效'
+
+        const actualExpiresAt = getActualExpiresAt(code)
+        const isExpired = actualExpiresAt ? actualExpiresAt < new Date() : false
+
+        if (isExpired) {
+          status = '已过期'
+          expiresDisplay = actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
+        } else if (code.isUsed) {
+          status = '已使用'
+          expiresDisplay = actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
+        } else if (!code.validDays) {
+          expiresDisplay = '无限期'
+        }
+
+        const cardTypeDisplay = getCardTypeDisplay(code)
+
+        return `${code.code},${cardTypeDisplay},${status},${new Date(code.createdAt).toLocaleString()},${expiresDisplay},${code.usedAt ? new Date(code.usedAt).toLocaleString() : ''},${code.usedBy || ''}`
+      }).join("\n")
+
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement("a")
     link.setAttribute("href", encodedUri)
@@ -398,12 +421,12 @@ export default function DashboardPage() {
   // 筛选激活码
   const filteredCodes = allCodes.filter(code => {
     const matchesSearch = code.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (code.usedBy && code.usedBy.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+      (code.usedBy && code.usedBy.toLowerCase().includes(searchTerm.toLowerCase()))
+
     const now = new Date()
     const actualExpiresAt = getActualExpiresAt(code)
     const isExpired = actualExpiresAt ? actualExpiresAt < now : false
-    
+
     let matchesStatus = true
     switch (statusFilter) {
       case 'unused':
@@ -416,7 +439,7 @@ export default function DashboardPage() {
         matchesStatus = isExpired
         break
     }
-    
+
     let matchesCardType = true
     if (cardTypeFilter !== 'all') {
       if (cardTypeFilter === 'none') {
@@ -425,7 +448,7 @@ export default function DashboardPage() {
         matchesCardType = code.cardType === cardTypeFilter
       }
     }
-    
+
     return matchesSearch && matchesStatus && matchesCardType
   })
 
@@ -442,11 +465,11 @@ export default function DashboardPage() {
     const isExpired = actualExpiresAt ? actualExpiresAt < now : false
 
     if (isExpired) {
-      return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">已过期</span>
+      return <Badge variant="destructive">已过期</Badge>
     } else if (code.isUsed) {
-      return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">已使用</span>
+      return <Badge variant="default">已使用</Badge>
     } else {
-      return <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">未激活</span>
+      return <Badge variant="secondary">未激活</Badge>
     }
   }
 
@@ -473,788 +496,692 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8">
       <div className="max-w-7xl mx-auto">
         {/* 头部 */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">激活码管理后台</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">激活码管理后台</h1>
+            <p className="text-gray-500 mt-1">管理和监控您的激活码系统</p>
+          </div>
+          <Button variant="destructive" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
             登出
-          </button>
-        </div>
-
-        {/* 导航标签 */}
-        <div className="mb-6">
-          <nav className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'stats'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              数据统计
-            </button>
-            <button
-              onClick={() => setActiveTab('generate')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'generate'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              生成激活码
-            </button>
-            <button
-              onClick={() => setActiveTab('list')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'list'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              激活码管理
-            </button>
-            <button
-              onClick={() => setActiveTab('changePassword')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'changePassword'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              修改密码
-            </button>
-            <button
-              onClick={() => setActiveTab('systemConfig')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'systemConfig'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              系统配置
-            </button>
-          </nav>
+          </Button>
         </div>
 
         {/* 消息提示 */}
         {message && (
-          <div className={`mb-4 p-4 rounded-md ${
-            messageType === 'success' 
-              ? 'bg-green-100 border border-green-400 text-green-700'
-              : 'bg-red-100 border border-red-400 text-red-700'
-          }`}>
-            {message}
-          </div>
+          <Alert variant={messageType === 'success' ? 'default' : 'destructive'} className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
         )}
 
-        {/* 数据统计标签页 */}
-        {activeTab === 'stats' && (
-          <div className="space-y-6">
+        {/* 主标签页 */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="stats" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">数据统计</span>
+            </TabsTrigger>
+            <TabsTrigger value="generate" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              <span className="hidden sm:inline">生成激活码</span>
+            </TabsTrigger>
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              <span className="hidden sm:inline">激活码管理</span>
+            </TabsTrigger>
+            <TabsTrigger value="changePassword" className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              <span className="hidden sm:inline">修改密码</span>
+            </TabsTrigger>
+            <TabsTrigger value="systemConfig" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">系统配置</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 数据统计标签页 */}
+          <TabsContent value="stats" className="space-y-6">
             {/* 统计卡片 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">总</span>
-                      </div>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          总激活码数
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stats.total}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">总激活码数</CardTitle>
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold">{stats.total}</div>
+                  <p className="text-xs text-muted-foreground mt-1">系统中的所有激活码</p>
+                </CardContent>
+              </Card>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">用</span>
-                      </div>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          已使用
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stats.used}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">已使用</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-600">{stats.used}</div>
+                  <p className="text-xs text-muted-foreground mt-1">已被激活的激活码</p>
+                </CardContent>
+              </Card>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">期</span>
-                      </div>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          已过期
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stats.expired}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">已过期</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-red-600">{stats.expired}</div>
+                  <p className="text-xs text-muted-foreground mt-1">超过有效期的激活码</p>
+                </CardContent>
+              </Card>
 
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">活</span>
-                      </div>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          可用激活码
-                        </dt>
-                        <dd className="text-lg font-medium text-gray-900">
-                          {stats.active}
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">可用激活码</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-600">{stats.active}</div>
+                  <p className="text-xs text-muted-foreground mt-1">未激活且有效</p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* 使用率图表 */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">使用率统计</h3>
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>使用率统计</CardTitle>
+                <CardDescription>激活码使用情况的可视化统计</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>已使用</span>
-                    <span>{stats.total > 0 ? Math.round((stats.used / stats.total) * 100) : 0}%</span>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-medium">已使用</span>
+                    <span className="text-muted-foreground">{stats.total > 0 ? Math.round((stats.used / stats.total) * 100) : 0}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.used / stats.total) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>已过期</span>
-                    <span>{stats.total > 0 ? Math.round((stats.expired / stats.total) * 100) : 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.expired / stats.total) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>可用</span>
-                    <span>{stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full" 
-                      style={{ width: `${stats.total > 0 ? (stats.active / stats.total) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 生成激活码标签页 */}
-        {activeTab === 'generate' && (
-          <div className="space-y-6">
-            {/* 生成激活码表单 */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">生成激活码</h2>
-              
-              <form onSubmit={handleGenerateCodes} className="space-y-4">
-                {/* 第一行：生成数量和套餐类型 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                      生成数量
-                    </label>
-                    <input
-                      type="number"
-                      id="amount"
-                      min="1"
-                      max="100"
-                      value={amount}
-                      onChange={(e) => setAmount(parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="cardType" className="block text-sm font-medium text-gray-700 mb-2">
-                      套餐类型
-                    </label>
-                    <select
-                      id="cardType"
-                      value={selectedCardType}
-                      onChange={(e) => handleCardTypeChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">请选择套餐类型</option>
-                      {cardTypes.map((cardType) => (
-                        <option key={cardType.name} value={cardType.name}>
-                          {cardType.name} ({cardType.description})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Progress value={stats.total > 0 ? (stats.used / stats.total) * 100 : 0} className="h-2" />
                 </div>
 
-                {/* 第二行：有效期设置 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="expiryDays" className="block text-sm font-medium text-gray-700 mb-2">
-                      有效期（天）
-                    </label>
-                    <input
-                      type="number"
-                      id="expiryDays"
-                      min="1"
-                      value={selectedCardType === '自定义' ? customDays : expiryDays}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value)
-                        if (selectedCardType === '自定义') {
-                          setCustomDays(value)
-                        } else {
-                          setExpiryDays(value)
-                        }
-                      }}
-                      disabled={selectedCardType !== '自定义' && selectedCardType !== ''}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-                      required
-                    />
-                    {selectedCardType && selectedCardType !== '自定义' && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        已选择{selectedCardType}，有效期自动设置为 {expiryDays} 天
-                      </p>
-                    )}
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-medium">已过期</span>
+                    <span className="text-muted-foreground">{stats.total > 0 ? Math.round((stats.expired / stats.total) * 100) : 0}%</span>
                   </div>
-                  
-                  <div className="flex items-end">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                    >
-                      {loading ? '生成中...' : `生成${selectedCardType ? selectedCardType : ''}激活码`}
-                    </button>
-                  </div>
+                  <Progress value={stats.total > 0 ? (stats.expired / stats.total) * 100 : 0} className="h-2 bg-red-100">
+                    <div className="h-full bg-red-500 transition-all" />
+                  </Progress>
                 </div>
-              </form>
-            </div>
+
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-medium">可用</span>
+                    <span className="text-muted-foreground">{stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}%</span>
+                  </div>
+                  <Progress value={stats.total > 0 ? (stats.active / stats.total) * 100 : 0} className="h-2 bg-blue-100">
+                    <div className="h-full bg-blue-500 transition-all" />
+                  </Progress>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 生成激活码标签页 */}
+          <TabsContent value="generate" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>生成激活码</CardTitle>
+                <CardDescription>批量生成新的激活码</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleGenerateCodes} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="amount">生成数量</Label>
+                      <Input
+                        type="number"
+                        id="amount"
+                        min="1"
+                        max="100"
+                        value={amount}
+                        onChange={(e) => setAmount(parseInt(e.target.value))}
+                        disabled={loading}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cardType">套餐类型</Label>
+                      <Select
+                        value={selectedCardType}
+                        onValueChange={handleCardTypeChange}
+                        disabled={loading}
+                      >
+                        <SelectTrigger id="cardType">
+                          <SelectValue placeholder="请选择套餐类型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cardTypes.map((cardType) => (
+                            <SelectItem key={cardType.name} value={cardType.name}>
+                              {cardType.name} ({cardType.description})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="expiryDays">有效期（天）</Label>
+                      <Input
+                        type="number"
+                        id="expiryDays"
+                        min="1"
+                        value={selectedCardType === '自定义' ? customDays : expiryDays}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value)
+                          if (selectedCardType === '自定义') {
+                            setCustomDays(value)
+                          } else {
+                            setExpiryDays(value)
+                          }
+                        }}
+                        disabled={selectedCardType !== '自定义' && selectedCardType !== '' || loading}
+                      />
+                      {selectedCardType && selectedCardType !== '自定义' && (
+                        <p className="text-sm text-muted-foreground">
+                          已选择{selectedCardType}，有效期自动设置为 {expiryDays} 天
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-end">
+                      <Button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            生成中...
+                          </>
+                        ) : (
+                          <>
+                            <Package className="mr-2 h-4 w-4" />
+                            生成{selectedCardType ? selectedCardType : ''}激活码
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
 
             {/* 生成的激活码列表 */}
             {generatedCodes.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-gray-800">本次生成的激活码</h2>
-                  <button
-                    onClick={() => exportCodes(generatedCodes)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                  >
-                    导出CSV
-                  </button>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          激活码
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          套餐类型
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          创建时间
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          有效期
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          操作
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {generatedCodes.map((code) => (
-                        <tr key={code.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                            {code.code}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {getCardTypeDisplay(code)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(code.createdAt).toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {code.validDays ? `${code.validDays}天（激活后生效）` : '无限期'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => copyToClipboard(code.code)}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              复制
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 激活码管理标签页 */}
-        {activeTab === 'list' && (
-          <div className="space-y-6">
-            {/* 搜索和筛选 */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                    搜索激活码或机器ID
-                  </label>
-                  <input
-                    type="text"
-                    id="search"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="输入激活码或机器ID"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-                    状态筛选
-                  </label>
-                  <select
-                    id="status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'unused' | 'used' | 'expired')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">全部状态</option>
-                    <option value="unused">未激活</option>
-                    <option value="used">已使用</option>
-                    <option value="expired">已过期</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="cardTypeFilter" className="block text-sm font-medium text-gray-700 mb-2">
-                    套餐类型
-                  </label>
-                  <select
-                    id="cardTypeFilter"
-                    value={cardTypeFilter}
-                    onChange={(e) => setCardTypeFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">全部套餐</option>
-                    {getAvailableCardTypes().map((cardType) => (
-                      <option key={cardType} value={cardType}>
-                        {cardType}
-                      </option>
-                    ))}
-                    <option value="none">无套餐类型</option>
-                  </select>
-                </div>
-                
-                <div className="flex items-end">
-                  <button
-                    onClick={() => exportCodes(filteredCodes)}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                  >
-                    导出筛选结果
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 激活码列表 */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  激活码列表 ({filteredCodes.length} 条记录)
-                </h2>
-                <button
-                  onClick={handleCleanupExpired}
-                  disabled={loading}
-                  className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                  title="清理过期激活码的绑定关系，允许绑定过期码的机器使用新激活码"
-                >
-                  清理过期绑定
-                </button>
-              </div>
-              
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="mt-2 text-gray-600">加载中...</p>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            激活码
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            状态
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            套餐类型
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            创建时间
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            过期时间
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            使用时间
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            使用者
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            操作
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {paginatedCodes.map((code) => (
-                          <tr key={code.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                              {code.code}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              {getStatusBadge(code)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {getCardTypeDisplay(code)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(code.createdAt).toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {(() => {
-                                if (!code.isUsed) {
-                                  return code.validDays ? '激活后生效' : '无限期'
-                                }
-                                const actualExpiresAt = getActualExpiresAt(code)
-                                return actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
-                              })()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {code.usedAt ? new Date(code.usedAt).toLocaleString() : '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {code.usedBy || '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                              <button
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>本次生成的激活码</CardTitle>
+                      <CardDescription>共生成 {generatedCodes.length} 个激活码</CardDescription>
+                    </div>
+                    <Button onClick={() => exportCodes(generatedCodes)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      导出CSV
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>激活码</TableHead>
+                          <TableHead>套餐类型</TableHead>
+                          <TableHead>创建时间</TableHead>
+                          <TableHead>有效期</TableHead>
+                          <TableHead>操作</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {generatedCodes.map((code) => (
+                          <TableRow key={code.id}>
+                            <TableCell className="font-mono text-sm">{code.code}</TableCell>
+                            <TableCell>{getCardTypeDisplay(code)}</TableCell>
+                            <TableCell>{new Date(code.createdAt).toLocaleString()}</TableCell>
+                            <TableCell>{code.validDays ? `${code.validDays}天（激活后生效）` : '无限期'}</TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => copyToClipboard(code.code)}
-                                className="text-blue-600 hover:text-blue-900"
                               >
-                                复制
-                              </button>
-                              <button
-                                onClick={() => handleDeleteCode(code.id)}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                删除
-                              </button>
-                            </td>
-                          </tr>
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* 激活码管理标签页 */}
+          <TabsContent value="list" className="space-y-6">
+            {/* 搜索和筛选 */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">搜索</Label>
+                    <Input
+                      id="search"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="输入激活码或机器ID"
+                    />
                   </div>
 
-                  {/* 分页 */}
-                  {totalPages > 1 && (
-                    <div className="mt-6 flex items-center justify-between">
-                      <div className="text-sm text-gray-700">
-                        显示第 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredCodes.length)} 条，共 {filteredCodes.length} 条记录
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          上一页
-                        </button>
-                        <div className="flex space-x-1">
-                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <button
-                              key={page}
-                              onClick={() => setCurrentPage(page)}
-                              className={`px-3 py-1 text-sm rounded-md ${
-                                currentPage === page
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white border border-gray-300 hover:bg-gray-50'
-                              }`}
-                            >
-                              {page}
-                            </button>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">状态筛选</Label>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={(value: any) => setStatusFilter(value)}
+                    >
+                      <SelectTrigger id="status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部状态</SelectItem>
+                        <SelectItem value="unused">未激活</SelectItem>
+                        <SelectItem value="used">已使用</SelectItem>
+                        <SelectItem value="expired">已过期</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cardTypeFilter">套餐类型</Label>
+                    <Select
+                      value={cardTypeFilter}
+                      onValueChange={setCardTypeFilter}
+                    >
+                      <SelectTrigger id="cardTypeFilter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部套餐</SelectItem>
+                        {getAvailableCardTypes().map((cardType) => (
+                          <SelectItem key={cardType} value={cardType}>
+                            {cardType}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="none">无套餐类型</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button
+                      onClick={() => exportCodes(filteredCodes)}
+                      className="w-full"
+                      variant="secondary"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      导出筛选结果
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 激活码列表 */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>激活码列表</CardTitle>
+                    <CardDescription>{filteredCodes.length} 条记录</CardDescription>
+                  </div>
+                  <Button
+                    onClick={handleCleanupExpired}
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    <AlertCircle className="mr-2 h-4 w-4" />
+                    清理过期绑定
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground mt-2">加载中...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-md border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>激活码</TableHead>
+                            <TableHead>状态</TableHead>
+                            <TableHead>套餐类型</TableHead>
+                            <TableHead>创建时间</TableHead>
+                            <TableHead>过期时间</TableHead>
+                            <TableHead>使用时间</TableHead>
+                            <TableHead>使用者</TableHead>
+                            <TableHead>操作</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedCodes.map((code) => (
+                            <TableRow key={code.id}>
+                              <TableCell className="font-mono text-sm">{code.code}</TableCell>
+                              <TableCell>{getStatusBadge(code)}</TableCell>
+                              <TableCell>{getCardTypeDisplay(code)}</TableCell>
+                              <TableCell>{new Date(code.createdAt).toLocaleString()}</TableCell>
+                              <TableCell>
+                                {(() => {
+                                  if (!code.isUsed) {
+                                    return code.validDays ? '激活后生效' : '无限期'
+                                  }
+                                  const actualExpiresAt = getActualExpiresAt(code)
+                                  return actualExpiresAt ? actualExpiresAt.toLocaleString() : '无限期'
+                                })()}
+                              </TableCell>
+                              <TableCell>{code.usedAt ? new Date(code.usedAt).toLocaleString() : '-'}</TableCell>
+                              <TableCell>{code.usedBy || '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(code.code)}
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteCode(code.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
                           ))}
-                        </div>
-                        <button
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          下一页
-                        </button>
-                      </div>
+                        </TableBody>
+                      </Table>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* 修改密码标签页 */}
-        {activeTab === 'changePassword' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">修改管理员密码</h2>
-              
-              <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
-                <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    当前密码
-                  </label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="请输入当前密码"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    新密码
-                  </label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="请输入新密码（至少6位）"
-                    required
-                    minLength={6}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                    确认新密码
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="请再次输入新密码"
-                    required
-                    minLength={6}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                >
-                  {loading ? '修改中...' : '修改密码'}
-                </button>
-              </form>
-
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <div className="text-sm text-yellow-800">
-                  <strong>注意事项：</strong>
-                  <ul className="mt-2 list-disc list-inside space-y-1">
-                    <li>新密码长度不能少于6位</li>
-                    <li>密码修改成功后将自动登出，需要使用新密码重新登录</li>
-                    <li>请确保妥善保管新密码</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 系统配置标签页 */}
-        {activeTab === 'systemConfig' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">系统配置管理</h2>
-              
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="mt-2 text-gray-600">加载中...</p>
-                </div>
-              ) : (
-                <form onSubmit={handleUpdateSystemConfig} className="space-y-6">
-                  {systemConfigs.map((config) => (
-                    <div key={config.key} className="border-b pb-4 last:border-b-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <label className="block text-sm font-medium text-gray-700">
-                          {config.key}
-                        </label>
-                        <span className="text-xs text-gray-500">{config.description}</span>
+                    {/* 分页 */}
+                    {totalPages > 1 && (
+                      <div className="mt-6 flex items-center justify-between">
+                        <div className="text-sm text-muted-foreground">
+                          显示第 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredCodes.length)} 条，共 {filteredCodes.length} 条记录
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            上一页
+                          </Button>
+                          <div className="flex gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className="w-9"
+                              >
+                                {page}
+                              </Button>
+                            ))}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            下一页
+                          </Button>
+                        </div>
                       </div>
-                      
-                      {config.key === 'allowedIPs' ? (
-                        <div className="space-y-2">
-                          <div className="text-sm text-gray-600 mb-2">IP白名单（每行一个IP地址）：</div>
-                          <textarea
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 修改密码标签页 */}
+          <TabsContent value="changePassword">
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle>修改管理员密码</CardTitle>
+                <CardDescription>更新您的管理员账户密码</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">当前密码</Label>
+                    <Input
+                      type="password"
+                      id="currentPassword"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="请输入当前密码"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">新密码</Label>
+                    <Input
+                      type="password"
+                      id="newPassword"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="请输入新密码（至少6位）"
+                      disabled={loading}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">确认新密码</Label>
+                    <Input
+                      type="password"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="请再次输入新密码"
+                      disabled={loading}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        修改中...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="mr-2 h-4 w-4" />
+                        修改密码
+                      </>
+                    )}
+                  </Button>
+                </form>
+
+                <Alert className="mt-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>注意事项：</strong>
+                    <ul className="mt-2 list-disc list-inside space-y-1 text-sm">
+                      <li>新密码长度不能少于6位</li>
+                      <li>密码修改成功后将自动登出，需要使用新密码重新登录</li>
+                      <li>请确保妥善保管新密码</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 系统配置标签页 */}
+          <TabsContent value="systemConfig">
+            <Card>
+              <CardHeader>
+                <CardTitle>系统配置管理</CardTitle>
+                <CardDescription>管理系统的重要配置参数</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground mt-2">加载中...</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleUpdateSystemConfig} className="space-y-6">
+                    {systemConfigs.map((config) => (
+                      <div key={config.key} className="space-y-2 pb-4 border-b last:border-b-0">
+                        <div className="flex justify-between items-start">
+                          <Label className="text-base font-medium">{config.key}</Label>
+                          <span className="text-xs text-muted-foreground">{config.description}</span>
+                        </div>
+
+                        {config.key === 'allowedIPs' ? (
+                          <Textarea
                             value={Array.isArray(config.value) ? config.value.join('\n') : config.value}
                             onChange={(e) => {
                               const ips = e.target.value.split('\n').filter(ip => ip.trim())
                               updateConfigValue(config.key, ips)
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                             rows={4}
                             placeholder="127.0.0.1&#10;::1"
+                            className="font-mono text-sm"
                           />
-                        </div>
-                      ) : config.key === 'bcryptRounds' ? (
-                        <div>
-                          <input
-                            type="number"
-                            min="4"
-                            max="15"
-                            value={config.value}
-                            onChange={(e) => updateConfigValue(config.key, parseInt(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="12"
-                          />
-                          <div className="text-xs text-gray-500 mt-1">
-                            推荐值：10-12（值越大越安全但计算越慢）
+                        ) : config.key === 'bcryptRounds' ? (
+                          <div className="space-y-2">
+                            <Input
+                              type="number"
+                              min="4"
+                              max="15"
+                              value={config.value}
+                              onChange={(e) => updateConfigValue(config.key, parseInt(e.target.value))}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              推荐值：10-12（值越大越安全但计算越慢）
+                            </p>
                           </div>
-                        </div>
-                      ) : config.key === 'jwtExpiresIn' ? (
-                        <div>
-                          <select
+                        ) : config.key === 'jwtExpiresIn' ? (
+                          <Select
+                            value={config.value}
+                            onValueChange={(value) => updateConfigValue(config.key, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1h">1小时</SelectItem>
+                              <SelectItem value="6h">6小时</SelectItem>
+                              <SelectItem value="12h">12小时</SelectItem>
+                              <SelectItem value="24h">24小时</SelectItem>
+                              <SelectItem value="7d">7天</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            type="text"
                             value={config.value}
                             onChange={(e) => updateConfigValue(config.key, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          >
-                            <option value="1h">1小时</option>
-                            <option value="6h">6小时</option>
-                            <option value="12h">12小时</option>
-                            <option value="24h">24小时</option>
-                            <option value="7d">7天</option>
-                          </select>
-                        </div>
+                            placeholder={`请输入${config.description || config.key}`}
+                          />
+                        )}
+                      </div>
+                    ))}
+
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          保存中...
+                        </>
                       ) : (
-                        <input
-                          type="text"
-                          value={config.value}
-                          onChange={(e) => updateConfigValue(config.key, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          placeholder={`请输入${config.description || config.key}`}
-                        />
+                        <>
+                          <Settings className="mr-2 h-4 w-4" />
+                          保存配置
+                        </>
                       )}
-                    </div>
-                  ))}
+                    </Button>
+                  </form>
+                )}
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                  >
-                    {loading ? '保存中...' : '保存配置'}
-                  </button>
-                </form>
-              )}
+                <div className="mt-8 space-y-4">
+                  <Alert>
+                    <FileText className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>配置说明：</strong>
+                      <ul className="mt-2 list-disc list-inside space-y-1 text-sm">
+                        <li><strong>allowedIPs</strong>：允许访问管理后台的IP地址白名单</li>
+                        <li><strong>jwtSecret</strong>：JWT令牌加密密钥（修改后所有用户需重新登录）</li>
+                        <li><strong>jwtExpiresIn</strong>：JWT令牌有效期</li>
+                        <li><strong>bcryptRounds</strong>：密码加密强度（4-15，推荐10-12）</li>
+                        <li><strong>systemName</strong>：系统显示名称</li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
 
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="text-sm text-blue-800">
-                  <strong>配置说明：</strong>
-                  <ul className="mt-2 list-disc list-inside space-y-1">
-                    <li><strong>allowedIPs</strong>：允许访问管理后台的IP地址白名单</li>
-                    <li><strong>jwtSecret</strong>：JWT令牌加密密钥（修改后所有用户需重新登录）</li>
-                    <li><strong>jwtExpiresIn</strong>：JWT令牌有效期</li>
-                    <li><strong>bcryptRounds</strong>：密码加密强度（4-15，推荐10-12）</li>
-                    <li><strong>systemName</strong>：系统显示名称</li>
-                  </ul>
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      <strong>注意事项：</strong>
+                      <ul className="mt-2 list-disc list-inside space-y-1 text-sm">
+                        <li>修改JWT密钥后，所有已登录用户需要重新登录</li>
+                        <li>修改IP白名单时请确保包含当前访问IP，否则可能被锁定</li>
+                        <li>配置修改立即生效，请谨慎操作</li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 </div>
-              </div>
-
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                <div className="text-sm text-yellow-800">
-                  <strong>注意事项：</strong>
-                  <ul className="mt-2 list-disc list-inside space-y-1">
-                    <li>修改JWT密钥后，所有已登录用户需要重新登录</li>
-                    <li>修改IP白名单时请确保包含当前访问IP，否则可能被锁定</li>
-                    <li>配置修改立即生效，请谨慎操作</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </main>
   )
-} 
+}
