@@ -20,6 +20,28 @@
 - ✅ 密码修改功能（管理员可在后台修改登录密码）
 - ✅ 系统配置管理（前台可配置IP白名单、JWT设置等）
 
+## 截图预览
+
+### 首页
+
+![首页](screenshots/home.png)
+
+### 登录页
+
+![登录页](screenshots/login.png)
+
+### 管理后台 - 数据统计
+
+![数据统计](screenshots/dashboard-stats.png)
+
+### 管理后台 - 生成激活码
+
+![生成激活码](screenshots/dashboard-generate.png)
+
+### 管理后台 - 激活码管理
+
+![激活码管理](screenshots/dashboard-list.png)
+
 ## 技术栈
 
 - **框架**: Next.js 14 (App Router)
@@ -242,4 +264,4 @@ CMD ["npm", "start"]
 - 🔧 **[系统开发文档](./xitonkaifa.md)** - 系统开发和维护相关文档
 
 ## Stargazers over time
-[![Stargazers over time](https://starchart.cc/Fiftonb/Easytoac.svg?variant=adaptive)](https://starchart.cc/Fiftonb/Easytoac)
+[![Stargazers over time](https://starchart.cc/01wanwu/Easytoac.svg?variant=adaptive)](https://starchart.cc/01wanwu/Easytoac)

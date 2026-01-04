@@ -12,8 +12,11 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import Link from 'next/link'
+import { getConfigWithDefault } from '@/lib/config-service'
 
-export default function Home() {
+export default async function Home() {
+  // 直接从数据库获取系统名称
+  const systemName = await getConfigWithDefault('systemName')
   const features = [
     {
       icon: Key,
@@ -74,9 +77,9 @@ export default function Home() {
             </Badge>
 
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900">
-              激活码管理系统
+              {systemName}
               <span className="block text-3xl md:text-5xl mt-4 text-gray-600">
-                Easytoac
+                Activation Code System
               </span>
             </h1>
 
@@ -160,7 +163,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                为什么选择 Easytoac？
+                为什么选择 {systemName}？
               </h2>
               <p className="text-lg text-gray-600 mb-8">
                 我们致力于提供最简单、最专业的激活码管理解决方案，
@@ -243,13 +246,13 @@ export default function Home() {
       <footer className="py-12 bg-gray-900 text-gray-400">
         <div className="container mx-auto px-6 text-center">
           <div className="mb-4">
-            <span className="text-2xl font-bold text-white">Easytoac</span>
+            <span className="text-2xl font-bold text-white">{systemName}</span>
           </div>
           <p className="text-sm">
-            © {new Date().getFullYear()} Easytoac. Built with Next.js 14 & shadcn/ui
+            © {new Date().getFullYear()} {systemName}. Built with Next.js 14 & shadcn/ui
           </p>
           <p className="text-xs mt-2 text-gray-500">
-            激活码管理系统 v1.0.0
+            {systemName} v1.0.0
           </p>
         </div>
       </footer>

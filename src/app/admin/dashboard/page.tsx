@@ -81,6 +81,7 @@ export default function DashboardPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [systemConfigs, setSystemConfigs] = useState<any[]>([])
+  const [systemName, setSystemName] = useState('激活码管理后台')
   const router = useRouter()
 
   // 预设套餐类型
@@ -222,6 +223,20 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }
+
+  // 获取系统名称（页面加载时执行一次）
+  useEffect(() => {
+    fetch('/api/public/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.systemName) {
+          setSystemName(data.systemName + '管理后台')
+        }
+      })
+      .catch(err => {
+        console.error('获取系统名称失败:', err)
+      })
+  }, [])
 
   useEffect(() => {
     fetchStats()
@@ -501,13 +516,16 @@ export default function DashboardPage() {
         {/* 头部 */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">激活码管理后台</h1>
-            <p className="text-gray-500 mt-1">管理和监控您的激活码系统</p>
+            <h1 className="text-3xl font-bold text-gray-900">{systemName}</h1>
+            <p className="text-gray-500 mt-1">管理和监控您的激活码</p>
           </div>
-          <Button variant="destructive" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            登出
-          </Button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 transition-colors rounded-lg hover:bg-red-50 hover:text-red-700"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>退出</span>
+          </button>
         </div>
 
         {/* 消息提示 */}
@@ -1047,7 +1065,7 @@ export default function DashboardPage() {
                     <strong>注意事项：</strong>
                     <ul className="mt-2 list-disc list-inside space-y-1 text-sm">
                       <li>新密码长度不能少于6位</li>
-                      <li>密码修改成功后将自动登出，需要使用新密码重新登录</li>
+                      <li>密码修改成功后将自动退出，需要使用新密码重新登录</li>
                       <li>请确保妥善保管新密码</li>
                     </ul>
                   </AlertDescription>

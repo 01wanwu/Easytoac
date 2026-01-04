@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [systemName, setSystemName] = useState('激活码管理系统')
   const router = useRouter()
+
+  // 获取系统名称
+  useEffect(() => {
+    fetch('/api/public/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.systemName) {
+          setSystemName(data.systemName)
+        }
+      })
+      .catch(err => {
+        console.error('获取系统名称失败:', err)
+      })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +63,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-b from-gray-50 to-gray-100">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-bold text-center">管理员登录</CardTitle>
+          <CardTitle className="text-3xl font-bold text-center">{systemName}</CardTitle>
           <CardDescription className="text-center">
             请输入您的账号和密码登录管理后台
           </CardDescription>
